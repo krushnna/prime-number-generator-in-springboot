@@ -1,0 +1,73 @@
+package com.project.primegenerator;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import com.project.primegenerator.controller.MainController;
+import com.project.primegenerator.model.PrimeNumberRecord;
+import com.project.primegenerator.service.PrimeNumberService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+import java.util.Optional;
+
+@SpringBootTest
+public class PrimeNumberControllerTests {
+
+	@Autowired
+	private MainController mainController;
+
+	@Test
+	public void testGeneratePrimes() {
+		// Test SieveOfEratosthenes algorithm
+		ResponseEntity<List<Integer>> responseEratosthenes = mainController.generatePrimes(1, 100, "SieveOfEratosthenes");
+		assertEquals(HttpStatus.OK, responseEratosthenes.getStatusCode());
+		assertTrue(responseEratosthenes.getBody().size() > 0);
+
+		//Test SieveOfAtkin algorithm
+		ResponseEntity<List<Integer>> responseAtkin = mainController.generatePrimes(1, 100, "SieveOfAtkin");
+		assertEquals(HttpStatus.OK, responseAtkin.getStatusCode());
+		assertTrue(responseAtkin.getBody().size() > 0);
+
+		//Test  TrialDivision algorithm
+		ResponseEntity<List<Integer>> responseTrialDivision = mainController.generatePrimes(1, 100, "TrialDivision");
+		assertEquals(HttpStatus.OK, responseTrialDivision.getStatusCode());
+		assertTrue(responseTrialDivision.getBody().size() > 0);
+	}
+
+	@Test
+	public void testInvalidAlgorithm() {
+		// Test giving an invalid algorithm
+		ResponseEntity<List<Integer>> responseInvalid = mainController.generatePrimes(1, 100, "InvalidAlgorithm");
+		assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseInvalid.getStatusCode());
+		assertNull(responseInvalid.getBody());
+	}
+
+	@Test
+	public void testGetAllPrimeNumberRecords() {
+		// Test retrieving all prime number records from the database
+		ResponseEntity<List<PrimeNumberRecord>> responseRecords = mainController.getAllPrimeNumberRecords();
+		assertEquals(HttpStatus.OK, responseRecords.getStatusCode());
+		assertTrue(responseRecords.getBody().size() > 0);
+	}
+
+	@Test
+	public void testGetPrimeNumberRecordById() {
+		//Assuming there at least one record in the database
+		List<PrimeNumberRecord> records = mainController.getAllPrimeNumberRecords().getBody();
+		assertNotNull(records);
+		assertFalse(records.isEmpty());
+		Long id = records.get(0).getId();
+
+		// Test retrieving a specific prime number record by ID
+		ResponseEntity<PrimeNumberRecord> responseRecord = mainController.getPrimeNumberRecordById(id);
+		assertEquals(HttpStatus.OK, responseRecord.getStatusCode());
+		assertNotNull(responseRecord.getBody());
+		assertEquals(id, responseRecord.getBody().getId());
+	}
+}
+
+
